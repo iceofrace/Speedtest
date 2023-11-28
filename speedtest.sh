@@ -759,7 +759,6 @@ _main() {
     [ -s "$work_dir"/librespeed-cli-node.txt ] && _librespeed_cli_test | tee -a "$work_dir"/output.txt
     [ -s "$work_dir"/iperf3-node.txt ] && _iperf3_test | tee -a "$work_dir"/output.txt
     _rm_dir
-    systemctl disable iperf3 > /dev/null
 }
 
 
