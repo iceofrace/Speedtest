@@ -20,12 +20,6 @@ _constant() {
     speedtest_cli_tar_armel_sha256="629a455a2879224bd0dbd4b36d8c721dda540717937e4660b4d2c966029466bf"
     speedtest_cli_tar_url="https://install.speedtest.net/app/cli/ookla-speedtest-${speedtest_cli_version}-linux-${speedtest_cli_arch}.tgz"
 
-    # bim-core，https://github.com/veoco/bim-core
-    bim_core_version="0.17.0"
-    bim_core_tar_x86_64_sha256="109280fbf5a821bc56c2e83b906e65228ebc8436054b2e7861ca6db88f7e0330"
-    bim_core_tar_aarch64_sha256="fa62357f94050fbb7851d1bbb7e393d8e1301281ce03c43b37dae55cbf08c198"
-    bim_core_tar_url="https://github.com/veoco/bim-core/releases/download/v${bim_core_version}/bimc-${bim_core_arch}-unknown-linux-musl"
-
     # speedtest-go，https://github.com/showwin/speedtest-go
     speedtest_go_version="1.6.9"
     speedtest_go_tar_x86_64_sha256="0e179818fe42913dccb8c6bf6db940c067b9eca9557b4d11ff2721cb70e7eefd"
@@ -177,8 +171,6 @@ _download_tar() {
     echo "speedtest-cli下载中"
     curl --progress-bar -o "$work_dir"/speedtest-cli.tgz -L "$speedtest_cli_tar_url"
     echo "$bim_core_tar_url"
-    echo "bim-core下载中"
-    [ -n "$bim_core_arch" ] && curl --progress-bar -o "$work_dir"/bim-core -L "$bim_core_tar_url"
     echo "$speedtest_go_tar_url"
     echo "speedtest-go下载中"
     curl --progress-bar -o "$work_dir"/speedtest-go.tar.gz -L "$speedtest_go_tar_url"
@@ -193,15 +185,10 @@ _download_tar() {
 _check_tar_sha256() {
     local speedtest_cli_tar_download_sha256 bim_core_tar_download_sha256 speedtest_go_tar_download_sha256 librespeed_cli_tar_download_sha256
     speedtest_cli_tar_download_sha256=$( sha256sum "$work_dir"/speedtest-cli.tgz | awk '{ print $1 }' )
-    bim_core_tar_download_sha256=$( sha256sum "$work_dir"/bim-core | awk '{ print $1 }' )
     speedtest_go_tar_download_sha256=$( sha256sum "$work_dir"/speedtest-go.tar.gz | awk '{ print $1 }' )
     librespeed_cli_tar_download_sha256=$( sha256sum "$work_dir"/librespeed-cli.tar.gz | awk '{ print $1 }' )
     if [ "$speedtest_cli_tar_download_sha256" != "$( eval "echo \$speedtest_cli_tar_${speedtest_cli_arch}_sha256" )" ]; then
         printf "${red}%-s${endc}\n" "经检测，speedtest-cli的SHA-256与官方不符，方便的话欢迎到GitHub反馈"
-        exit 1
-    fi
-    if [ "$bim_core_tar_download_sha256" != "$( eval "echo \$bim_core_tar_${bim_core_arch}_sha256" )" ] && [ -n "$bim_core_arch" ]; then
-        printf "${red}%-s${endc}\n" "经检测，bim-core的SHA-256与官方不符，方便的话欢迎到GitHub反馈"
         exit 1
     fi
     if [ "$speedtest_go_tar_download_sha256" != "$( eval "echo \$speedtest_go_tar_${speedtest_go_arch}_sha256" )" ]; then
@@ -221,7 +208,6 @@ _unzip_tar() {
     tar -xf "$work_dir"/speedtest-cli.tgz -C "$work_dir"
     tar -xf "$work_dir"/speedtest-go.tar.gz -C "$work_dir"
     tar -xf "$work_dir"/librespeed-cli.tar.gz -C "$work_dir"
-    chmod +x "$work_dir"/bim-core
 }
 
 
@@ -292,9 +278,6 @@ _classify_node() {
         # speedtest-cli
         if [[ "$first_column" =~ "speedtest-cli" ]]; then
             awk NR==${i} "$work_dir"/all-node.txt >> "$work_dir"/speedtest-cli-node.txt
-        # bim-core
-        elif [[ "$first_column" =~ "bim-core" ]] && [ -n "$bim_core_arch" ]; then
-            awk NR==${i} "$work_dir"/all-node.txt >> "$work_dir"/bim-core-node.txt
         # speedtest-go
         elif [[ "$first_column" =~ "speedtest-go" ]]; then
             awk NR==${i} "$work_dir"/all-node.txt >> "$work_dir"/speedtest-go-node.txt
@@ -360,53 +343,6 @@ _speedtest_cli_test() {
         fi
         count=$(( count + 1 ))
     done < "$work_dir"/speedtest-cli-option-filter.txt
-}
-
-
-########## bim-core ##########
-
-_bim_core_test() {
-    # bim-core的选项、参数
-    awk -F, '{ print $3 }' "$work_dir"/bim-core-node.txt > "$work_dir"/bim-core-option.txt
-    _filter_option_bim_core "$work_dir"/bim-core-option.txt "$work_dir"/bim-core-option-filter.txt
-    # bim-core测试、输出
-    local option_para
-    local count="1"
-    while IFS= read -r option_para; do
-        IFS="$old_IFS"
-        local node_name latency jitter download upload
-        local download_c="15" upload_c="15" latency_c="13" jitter_c="13"
-        # bim-core测试
-        timeout --foreground 70 "$work_dir"/bim-core $option_para > "$work_dir"/bim-core-"$count".json 2> "$work_dir"/bim-core-"$count"-error.json
-        # bim-core输出
-        if [ -s "$work_dir"/bim-core-"$count".json ]; then
-            # 节点名称
-            node_name=$( awk -F, NR=="$count"'{ print $2 }' "$work_dir"/bim-core-node.txt )
-            # 延迟，ms
-            latency="$( awk '{ print $5 }' "$work_dir"/bim-core-"$count".json | awk -F',' '{ print $1 }' )"
-            _check_num "$latency" || latency=" 失败"
-            _check_num "$latency" || latency_c="15"
-            _check_num "$latency" && latency="$( printf "%.2f" "$latency" ) ms"
-            # 抖动，ms
-            jitter="$( awk '{ print $6 }' "$work_dir"/bim-core-"$count".json )"
-            _check_num "$jitter" || jitter=" 失败"
-            _check_num "$jitter" || jitter_c="15"
-            _check_num "$jitter" && jitter="$( printf "%.2f" "$jitter" ) ms"
-            # 下载速度
-            download="$( awk '{ print $3 }' "$work_dir"/bim-core-"$count".json | awk -F',' '{ print $1 }' )"
-            _check_num "$download" || download="  失败"
-            _check_num "$download" || download_c="17"
-            _check_num "$download" && download="$( printf "%.2f" "$download" ) Mbps"
-            # 上传速度
-            upload="$( awk '{ print $1 }' "$work_dir"/bim-core-"$count".json | awk -F',' '{ print $1 }' )"
-            _check_num "$upload" || upload="  失败"
-            _check_num "$upload" || upload_c="17"
-            _check_num "$upload" && upload="$( printf "%.2f" "$upload" ) Mbps"
-            # 输出结果
-            [ -s "$work_dir"/bim-core-"$count".json ] && _check_output
-        fi
-        count=$(( count + 1 ))
-    done < "$work_dir"/bim-core-option-filter.txt
 }
 
 
@@ -626,7 +562,7 @@ _iperf3_test() {
         fi
         count=$(( count + 1 ))
     done < "$work_dir"/iperf3-option-filter.txt
-    systemctl stop iperf3 > /dev/null
+    systemctl stop iperf3
     systemctl disable iperf3 > /dev/null
 }
 
@@ -645,13 +581,6 @@ _filter_option_1_para() {
     if [ "$( echo "$line_input" | awk "{ print $"$column_count" }" )" == "$1" ] || [ "$( echo "$line_input" | awk "{ print $"$column_count" }" )" == "$2" ]; then
         column_count=$(( column_count + 1 ))
         line_output="$line_output $1 $( echo "$line_input" | awk "{ print $"$column_count" }" )"
-    fi
-}
-
-# bim-core专用，处理为链接的参数
-_filter_option_bim_core_1() {
-    if [[ "$( echo "$line_input" | awk "{ print $"$column_count" }" )" =~ http ]]; then
-        line_output="$line_output $( echo "$line_input" | awk "{ print $"$column_count" }" )"
     fi
 }
 
@@ -683,23 +612,6 @@ _filter_option_speedtest_cli() {
         for (( column_count=1; column_count <= column_all_count; column_count++ )); do
             _filter_option_1_para -s --server-id
             _filter_option_1_para -o --host
-        done
-        echo "$line_output" >> "$file_output"
-    done < "$file_input"
-}
-
-# bim-core
-_filter_option_bim_core() {
-    local line_input line_output column_count column_all_count
-    local file_input="$1" file_output="$2"
-    while IFS= read -r line_input; do
-        IFS="$old_IFS"
-        line_output=""
-        column_all_count="$( echo "$line_input" | awk '{ print NF }' )"
-        for (( column_count=1; column_count <= column_all_count; column_count++ )); do
-            _filter_option_1_para -6 --ipv6
-            _filter_option_1_para -m --multi
-            _filter_option_bim_core_1
         done
         echo "$line_output" >> "$file_output"
     done < "$file_input"
@@ -836,15 +748,14 @@ _main() {
     _download_tar
     _check_tar_sha256
     _unzip_tar
-    clear
+#    clear
     _get_node_list
     _classify_node
-    clear
+#    clear
     _print_banner_1 | tee -a "$work_dir"/output.txt
     [ -s "$work_dir"/banner-custom.txt ] && _print_banner_2 | tee -a "$work_dir"/output.txt
     _print_banner_3 | tee -a "$work_dir"/output.txt
     [ -s "$work_dir"/speedtest-cli-node.txt ] && _speedtest_cli_test | tee -a "$work_dir"/output.txt
-    [ -s "$work_dir"/bim-core-node.txt ] && _bim_core_test | tee -a "$work_dir"/output.txt
     [ -s "$work_dir"/speedtest-go-node.txt ] && _speedtest_go_test | tee -a "$work_dir"/output.txt
     [ -s "$work_dir"/librespeed-cli-node.txt ] && _librespeed_cli_test | tee -a "$work_dir"/output.txt
     [ -s "$work_dir"/iperf3-node.txt ] && _iperf3_test | tee -a "$work_dir"/output.txt
