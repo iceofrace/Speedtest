@@ -60,7 +60,7 @@ _constant() {
 _print_banner_1() {
      echo "------------------------ 多功能 自更新 测速脚本 ------------------------"
      echo -e " Version               : ${green}${script_version}${endc}"
-     echo -e " 项目修改自             : https://github.com/i-abc/speedtest/"
+     echo -e " Modify from           : ${green}https://github.com/i-abc/speedtest${endc}"
      echo -e " Usage                 : ${yellow}bash <(curl -sL bash.icu/speedtest)${endc}"
      echo -e " GitHub                : ${green}https://github.com/i-abc/speedtest${endc}"
      printf "%-72s\n" "-" | sed 's)\s)-)g'
