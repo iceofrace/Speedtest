@@ -4,14 +4,12 @@
 ######### 自定义常量 ##########
 
 _constant() {
-    script_version="v2023-11-17"
+    script_version="v2023-11-28"
     old_IFS="$IFS"
     work_dir="./sp-github-i-abc"
-    node_set=""
-    node_set_1="https://github.com/i-abc/Speedtest/raw/node/all-node.txt"
-    node_set_2="https://jihulab.com/i-abc/speedtest/-/raw/node/all-node-mirror.txt"
+    node_set="https://github.com/i-abc/Speedtest/raw/node/all-node.txt"
 
-    # url_1为官方源，url_2为镜像源，皆会进行SHA-256检测
+    # 使用官方源，皆会进行SHA-256检测
 
     # speedtest-cli，https://www.speedtest.net/zh-Hans/apps/cli
     speedtest_cli_version="1.2.0"
@@ -20,17 +18,13 @@ _constant() {
     speedtest_cli_tar_aarch64_sha256="3953d231da3783e2bf8904b6dd72767c5c6e533e163d3742fd0437affa431bd3"
     speedtest_cli_tar_armhf_sha256="e45fcdebbd8a185553535533dd032d6b10bc8c64eee4139b1147b9c09835d08d"
     speedtest_cli_tar_armel_sha256="629a455a2879224bd0dbd4b36d8c721dda540717937e4660b4d2c966029466bf"
-    speedtest_cli_tar_url=""
-    speedtest_cli_tar_url_1="https://install.speedtest.net/app/cli/ookla-speedtest-${speedtest_cli_version}-linux-${speedtest_cli_arch}.tgz"
-    speedtest_cli_tar_url_2="https://jihulab.com/i-abc/speedtest/-/raw/asset/speedtest-cli/v${speedtest_cli_version}/ookla-speedtest-${speedtest_cli_version}-linux-${speedtest_cli_arch}.tgz"
+    speedtest_cli_tar_url="https://install.speedtest.net/app/cli/ookla-speedtest-${speedtest_cli_version}-linux-${speedtest_cli_arch}.tgz"
 
     # bim-core，https://github.com/veoco/bim-core
     bim_core_version="0.17.0"
     bim_core_tar_x86_64_sha256="109280fbf5a821bc56c2e83b906e65228ebc8436054b2e7861ca6db88f7e0330"
     bim_core_tar_aarch64_sha256="fa62357f94050fbb7851d1bbb7e393d8e1301281ce03c43b37dae55cbf08c198"
-    bim_core_tar_url=""
-    bim_core_tar_url_1="https://github.com/veoco/bim-core/releases/download/v${bim_core_version}/bimc-${bim_core_arch}-unknown-linux-musl"
-    bim_core_tar_url_2="https://jihulab.com/i-abc/speedtest/-/raw/asset/bim-core/v${bim_core_version}/bimc-${bim_core_arch}-unknown-linux-musl"
+    bim_core_tar_url="https://github.com/veoco/bim-core/releases/download/v${bim_core_version}/bimc-${bim_core_arch}-unknown-linux-musl"
 
     # speedtest-go，https://github.com/showwin/speedtest-go
     speedtest_go_version="1.6.9"
@@ -39,9 +33,7 @@ _constant() {
     speedtest_go_tar_arm64_sha256="cb10ceb476fb6c8702e3af77e54022ffe30e9d2fd4b85936a9966f5dd7f3037d"
     speedtest_go_tar_armv7_sha256="8e9db4688e0d405230b7d00fbd904b1f3ab7635c52d1b65d8ff38d58d9260294"
     speedtest_go_tar_armv6_sha256="bcca71c5daf2f9d9271709bbeddff26e63089a3be4ab3a2466f7a932ae8bec31"
-    speedtest_go_tar_url=""
-    speedtest_go_tar_url_1="https://github.com/showwin/speedtest-go/releases/download/v${speedtest_go_version}/speedtest-go_${speedtest_go_version}_Linux_${speedtest_go_arch}.tar.gz"
-    speedtest_go_tar_url_2="https://jihulab.com/i-abc/speedtest/-/raw/asset/speedtest-go/v${speedtest_go_version}/speedtest-go_${speedtest_go_version}_Linux_${speedtest_go_arch}.tar.gz"
+    speedtest_go_tar_url="https://github.com/showwin/speedtest-go/releases/download/v${speedtest_go_version}/speedtest-go_${speedtest_go_version}_Linux_${speedtest_go_arch}.tar.gz"
 
     # librespeed-cli，https://github.com/librespeed/speedtest-cli
     librespeed_cli_version="1.0.10"
@@ -50,10 +42,8 @@ _constant() {
     librespeed_cli_tar_arm64_sha256="0ecbb98abb39f17bde2c0efae23f8446f4596c3a824aa6dda9b71723386b03ed"
     librespeed_cli_tar_armv7_sha256="b121733b9a18aa646a16393396dd7fe59e8773420a38acb05b91652c4d6cb356"
     librespeed_cli_tar_armv6_sha256="def98bbf0e79805411bca312e9e6bcddd12cd0abf4e6584a3ae05aa20c762b64"
-    librespeed_cli_tar_url=""
-    librespeed_cli_tar_url_1="https://github.com/librespeed/speedtest-cli/releases/download/v${librespeed_cli_version}/librespeed-cli_${librespeed_cli_version}_linux_${librespeed_cli_arch}.tar.gz"
-    librespeed_cli_tar_url_2="https://jihulab.com/i-abc/speedtest/-/raw/asset/librespeed-cli/v${librespeed_cli_version}/librespeed-cli_${librespeed_cli_version}_linux_${librespeed_cli_arch}.tar.gz"
-
+    librespeed_cli_tar_url="https://github.com/librespeed/speedtest-cli/releases/download/v${librespeed_cli_version}/librespeed-cli_${librespeed_cli_version}_linux_${librespeed_cli_arch}.tar.gz"
+   
     # 配色
     red='\033[1;31m'
     green='\033[1;32m'
@@ -126,37 +116,6 @@ _check_architecture() {
         speedtest_cli_arch="armel"
         speedtest_go_arch="armv6"
         librespeed_cli_arch="armv6"
-    fi
-}
-
-
-########## 检测地区，指定下载源 ##########
-
-_check_region() {
-    local loc
-    loc=$( curl -s "https://www.visa.cn/cdn-cgi/trace" | awk -F'=' '/loc/{ print $2 }' )
-    echo "loc: $loc"
-    if [ -z "$loc" ]; then
-        echo "使用镜像源"
-        node_set="$node_set_2"
-        speedtest_cli_tar_url="$speedtest_cli_tar_url_2"
-        bim_core_tar_url="$bim_core_tar_url_2"
-        speedtest_go_tar_url="$speedtest_go_tar_url_2"
-        librespeed_cli_tar_url="$librespeed_cli_tar_url_2"
-    elif [ "$loc" != "CN" ]; then
-        echo "使用默认源"
-        node_set="$node_set_1"
-        speedtest_cli_tar_url="$speedtest_cli_tar_url_1"
-        bim_core_tar_url="$bim_core_tar_url_1"
-        speedtest_go_tar_url="$speedtest_go_tar_url_1"
-        librespeed_cli_tar_url="$librespeed_cli_tar_url_1"
-    else
-        echo "使用镜像源"
-        node_set="$node_set_2"
-        speedtest_cli_tar_url="$speedtest_cli_tar_url_2"
-        bim_core_tar_url="$bim_core_tar_url_2"
-        speedtest_go_tar_url="$speedtest_go_tar_url_2"
-        librespeed_cli_tar_url="$librespeed_cli_tar_url_2"
     fi
 }
 
@@ -265,7 +224,6 @@ _unzip_tar() {
 }
 
 
-
 ########## 获取节点列表 ##########
 
 _get_node_list() {
@@ -351,7 +309,6 @@ _classify_node() {
         fi
     done
 }
-
 
 
 ########## speedtest-cli ##########
@@ -853,26 +810,10 @@ _check_output(){
 }
 
 
-########## 上传结果 ##########
-_upload_output() {
-    local url_name upload_url share_url admin_url
-    # 替换掉输出结果里的颜色代码
-    sed -i 's)\x1B[[0-9;]*m))g' "$work_dir"/output.txt
-    # 随机取6位作为分享链接名字
-    url_name="speedtest-$( head /dev/random | sha256sum | awk '{ print $1 }' | cut -c 1-6 )"
-    # 分享链接服务端，https://github.com/SharzyL/pastebin-worker
-    upload_url="$( curl -X POST -s -F "c=@${work_dir}/output.txt" -F "e=7d" -F "n=${url_name}" "https://pastebin.xidian.eu.org" )"
-    share_url="$( echo "$upload_url" | awk -F'"' '/url/{ print $4 }' )"
-    admin_url="$( echo "$upload_url" | awk -F'"' '/admin/{ print $4 }' )"
-    [[ "$share_url" =~ ^https://pastebin.xidian.eu.org/ ]] && printf "${yellow}%-s${endc}%-s\n" "分享链接(有效期7天): " "$share_url"
-    [[ "$admin_url" =~ ^https://pastebin.xidian.eu.org/ ]] && printf "${yellow}%-s${endc}%-s\n\n" "管理您的分享链接: " "$admin_url"
-}
-
 ########## 删除残余文件 ##########
 
 _rm_dir() {
     _print_banner_4 | tee -a "$work_dir"/output.txt
-    _upload_output
     rm -rf "$work_dir"
     exit 0
 }
