@@ -237,6 +237,12 @@ bash <(curl -sL bash.icu/speedtest)
 bash <(curl -sL https://raw.githubusercontent.com/i-abc/Speedtest/main/speedtest.sh)
 ```
 
+仅官方源
+
+```bash
+bash <(curl -sL https://raw.githubusercontent.com/iceofrace/Speedtest/main/speedtest.sh)
+```
+
 # 基本功能
 
 脚本自带丰富的测试项目：
