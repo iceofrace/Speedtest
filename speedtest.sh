@@ -626,8 +626,8 @@ _iperf3_test() {
         fi
         count=$(( count + 1 ))
     done < "$work_dir"/iperf3-option-filter.txt
-    systemctl stop iperf3
-    systemctl disable iperf3
+    systemctl stop iperf3 > /dev/null
+    systemctl disable iperf3 > /dev/null
 }
 
 
