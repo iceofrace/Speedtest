@@ -828,7 +828,6 @@ _main() {
     _check_architecture
     _constant
     _print_banner_1
-    _check_region
     _check_package tar tar
     _check_package curl curl
     _check_package iperf3 iperf3
